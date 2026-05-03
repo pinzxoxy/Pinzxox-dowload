@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TikTok Downloader Ultra - By Kelpin</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&family=Orbitron:wght@700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 50%, #0ea5e9 100%);
+            background-attachment: fixed;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            min-height: 100vh;
+            color: #f0f9ff;
+        }
+        .glass-master {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
+            border-radius: 35px;
+        }
+        .btn-action { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); border: 1px solid rgba(255, 255, 255, 0.1); }
+        .btn-action:hover { transform: translateY(-3px); box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2); }
+        
+        .premium-text {
+            font-family: 'Orbitron', sans-serif;
+            background: linear-gradient(to right, #fff, #7dd3fc, #fff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 0 15px rgba(125, 211, 252, 0.5);
+            letter-spacing: 4px;
+        }
+        .loading-bar { height: 4px; width: 100%; background: rgba(255,255,255,0.1); position: relative; overflow: hidden; border-radius: 10px; }
+        .loading-bar::after { content: ''; position: absolute; width: 40%; height: 100%; background: #38bdf8; animation: flow 1.2s infinite ease-in-out; }
+        @keyframes flow { from { left: -40%; } to { left: 100%; } }
+        
+        .card-appear { animation: zoomIn 0.4s ease-out forwards; }
+        @keyframes zoomIn { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }
+    </style>
+</head>
+<body class="p-4 md:p-10">
+
+<div class="max-w-3xl mx-auto">
+    <div class="glass-master p-8 mb-8 text-center relative overflow-hidden">
+        <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-blue-400 to-transparent"></div>
+        
+        <h1 class="text-4xl md:text-6xl premium-text mb-4 uppercase font-black">DOWNLOAD</h1>
+        <p class="text-blue-200 text-[10px] tracking-[0.5em] font-bold uppercase opacity-80 italic">TikTok Ultra HD Engine</p>
+        
+        <div class="mt-10 space-y-4">
+            <input type="text" id="urlInput" placeholder="Tempel link TikTok Publik di sini..." 
+                class="w-full p-5 rounded-2xl bg-white/10 border border-white/20 focus:border-blue-400 focus:bg-white/20 outline-none transition text-white placeholder:text-blue-200/50 shadow-inner">
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                <button onclick="fetchTikTok('no-wm')" class="btn-action bg-blue-600 hover:bg-blue-500 p-4 rounded-xl text-[10px] font-extrabold uppercase">Video No Watermark</button>
+                <button onclick="fetchTikTok('hd')" class="btn-action bg-cyan-500 hover:bg-cyan-400 p-4 rounded-xl text-[10px] font-extrabold uppercase text-slate-900">Video Ultra HD</button>
+                <button onclick="fetchTikTok('audio')" class="btn-action bg-indigo-900 hover:bg-indigo-800 p-4 rounded-xl text-[10px] font-extrabold uppercase">Audio MP3</button>
+            </div>
+        </div>
+
+        <div id="loader" class="hidden mt-6 text-center">
+            <div class="loading-bar"></div>
+            <p class="text-[9px] text-blue-300 mt-2 tracking-widest animate-pulse uppercase font-bold">MENGAMBIL KUALITAS TERBAIK...</p>
+        </div>
+    </div>
+
+    <div id="downloadList" class="grid grid-cols-1 md:grid-cols-2 gap-6"></div>
+
+    <div class="mt-16 text-center">
+        <p class="text-[9px] text-blue-300 tracking-[0.6em] uppercase font-bold opacity-60 mb-2">Developed</p>
+        <h2 class="text-2xl font-black tracking-tighter text-white uppercase italic">By <span class="text-blue-400">Kelpin</span></h2>
+    </div>
+</div>
+
+<script>
+    async function fetchTikTok(mode) {
+        const input = document.getElementById('urlInput');
+        const url = input.value.trim();
+        const loader = document.getElementById('loader');
+        const list = document.getElementById('downloadList');
+
+        if (!url) return alert("Masukkan link-nya dulu, Pin!");
+        loader.classList.remove('hidden');
+
+        try {
+            // Memanggil API TikWM dengan mode HD aktif
+            const response = await fetch(`https://www.tikwm.com/api/?url=${encodeURIComponent(url)}&hd=1`);
+            const res = await response.json();
+
+            if (res.code === 0) {
+                const data = res.data;
+                const newItem = document.createElement('div');
+                newItem.className = "glass-master p-4 card-appear relative mb-4";
+
+                // Memilih URL berdasarkan mode
+                let finalUrl = '';
+                let label = '';
+                if (mode === 'audio') {
+                    finalUrl = data.music;
+                    label = 'AUDIO MP3';
+                } else if (mode === 'hd') {
+                    finalUrl = data.hdplay || data.play;
+                    label = 'VIDEO ULTRA HD';
+                } else {
+                    finalUrl = data.play;
+                    label = 'NO WATERMARK';
+                }
+                
+                const mediaContent = mode === 'audio'
+                    ? `<div class="p-6 bg-black/20 rounded-xl"><audio controls class="w-full"><source src="${finalUrl}" type="audio/mpeg"></audio></div>`
+                    : `<div class="rounded-xl overflow-hidden bg-black shadow-2xl border border-white/10"><video controls class="w-full aspect-[9/16]"><source src="${finalUrl}" type="video/mp4"></video></div>`;
+
+                newItem.innerHTML = `
+                    <div class="flex justify-between items-center mb-3">
+                        <span class="text-[9px] font-black bg-blue-600 text-white px-3 py-1 rounded-lg uppercase tracking-widest">${label}</span>
+                        <button onclick="this.parentElement.parentElement.remove()" class="text-white/40 hover:text-red-500 transition font-bold text-lg">✕</button>
+                    </div>
+                    ${mediaContent}
+                    <div class="mt-4 space-y-2">
+                        <a href="${finalUrl}" target="_blank" 
+                           class="block w-full bg-white/10 border border-white/20 text-white text-[10px] font-bold py-3 rounded-xl hover:bg-white/20 transition uppercase tracking-[0.2em] text-center">
+                           Simpan ke Galeri
+                        </a>
+                        <p class="text-[9px] text-white font-bold opacity-40 uppercase tracking-tighter text-center italic">@${data.author.unique_id}</p>
+                    </div>
+                `;
+
+                list.prepend(newItem);
+                input.value = '';
+            } else {
+                alert("Gagal mengambil video. Pastikan link TikTok Publik!");
+            }
+        } catch (e) {
+            alert("Error: Masalah jaringan.");
+        } finally {
+            loader.classList.add('hidden');
+        }
+    }
+</script>
+
+</body>
+</html>
